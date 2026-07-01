@@ -4,7 +4,7 @@ import sys
 # Inicializamos
 pygame.init()
 pantalla = pygame.display.set_mode((600, 600))
-pygame.display.set_caption("Prueba fdsf")
+pygame.display.set_caption("Prueba ff")
 reloj = pygame.time.Clock()
 
 # Ocultamos el cursor normal de Windows/Linux para ver solo nuestro círculo
