@@ -10,51 +10,115 @@
 #include <stdbool.h>
 
 
-int main (void)
+/*int main (void)
 {
   init_terminal();
-  Tetroncios piece = mk_tetroncios(Z, 1, 1);
-
-  draw_one_piece(&piece);
+  Tetroncios piece = mk_tetroncios(T, 1, 1);
 
   while (1)
   {
     char c = read_key();
 
-    switch (c)
-    {
-      case 'j': case 'J':
-        rotate(&piece, false);
-        break;
-      case 'k': case 'K':
-        rotate(&piece, true);
-        break;
-      case 'w':
-        general_move(&piece, 0, -1);
-        break;
-      case 's':
-        general_move(&piece, 0, 1);
-        break;
-      case 'd':
-        general_move(&piece, 1, 0);
-        break;
-      case 'a':
-        general_move(&piece, -1, 0);
-        break;
-      case 'q':
-        exit(0);
-    }
+    if (c == 'q') break;
 
-    clear_screen();
-    // flush();
-    draw_one_piece(&piece);
-
-    flush();
-
-    usleep(1000000/60);
+    update_tetron(&piece, c);
+    draw_tetron(&piece);
+    
+    usleep(1000000/25);
   }
 
   exit(0);
+}*/
+
+void draw_tetron(Tetroncios *tetron)
+{
+  clear_screen();
+  draw_one_piece(tetron);
+  flush();
+}
+
+void update_tetron(Tetroncios *tetron, char comando)
+{
+  switch (comando)
+  {
+    case 'j': case 'J':
+      rotate(tetron, false);
+      break;
+    case 'k': case 'K':
+      rotate(tetron, true);
+      break;
+  }
+
+  move_piece(tetron, comando);
+}
+
+void move_piece(Tetroncios *tetron, char comando)
+{
+  switch (comando)
+  {
+    case ' ':
+      hard_drop(tetron);
+      break;
+    case 's':
+      soft_drop_fixed(tetron);
+      break;
+    case 'r': case 'R':
+      reset_piece_pos(tetron);
+    default: 
+      gravity(tetron, 0);
+      break;
+  }
+
+  switch (comando) // so that gravity can still affect even if you  move side ways
+  {
+    case 'd':
+      general_move(tetron, 1, 0);
+      break;
+    case 'a':
+      general_move(tetron, -1, 0);
+      break;
+  }
+}
+
+void hard_drop(Tetroncios *tetron)
+{
+  return;
+}
+
+void soft_drop_fixed(Tetroncios *tetron)
+{
+  static int frames_since_last = 2 - 1;
+
+   if (frames_since_last == 0)
+  {
+    general_move(tetron, 0, 1);
+    frames_since_last = 2 - 1; 
+  } else 
+  {
+    frames_since_last--;
+  }
+}
+
+void gravity(Tetroncios *tetron, int level)
+{
+  // algo para diferentes levels meteria aqui mas tarde
+
+  static int frames_since_last = 20 - 1;
+
+  if (frames_since_last == 0)
+  {
+    general_move(tetron, 0, 1);
+    frames_since_last = 20 - 1; // this would change depending on the level later on
+  } else 
+  {
+    frames_since_last--;
+  }
+}
+
+void reset_piece_pos(Tetroncios *tetron)
+{
+  tetron->pos.x = 1;
+  tetron->pos.y = 1;
 }
 
 void general_move(Tetroncios *tetron, int x_increment, int y_increment)

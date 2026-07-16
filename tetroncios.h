@@ -30,8 +30,11 @@ typedef struct tetroncios {
 // MAKE TETRON 
 Tetroncios mk_tetroncios(BlockTypes te_type, int x, int y);
 // END MAKE TETRON
-//
+// UPDATE
+void update_tetron(Tetroncios *tetron, char comando);
+// END UPDATE
 // DRAW TETRON 
+void draw_tetron(Tetroncios *tetron);
 void draw_one_block(BlockTypes te_type, int x, int y);
 void draw_one_piece(Tetroncios *tetron);
 //END DRAWING TETRON 
@@ -44,6 +47,11 @@ void flip_row(int size, BlockTypes array[size]);
 void flip_rows_matrix(int size, BlockTypes matrix[size][size]);
 // END ROTATE
 // MOVE
+void move_piece(Tetroncios *tetron, char comando);
+void hard_drop(Tetroncios *tetron);
+void soft_drop_fixed(Tetroncios *tetron);
+void gravity(Tetroncios *tetron, int level);
+void reset_piece_pos(Tetroncios *tetron);
 void general_move(Tetroncios *tetron, int x_increment, int y_increment); // y 20 x 40 los limites
 // END MOVE 
 #endif // !TETRONCIOS_H
