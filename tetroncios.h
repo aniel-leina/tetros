@@ -42,5 +42,8 @@ void swap(BlockTypes *a, BlockTypes *b);
 void transpose(int size, BlockTypes matrix[size][size]);
 void flip_row(int size, BlockTypes array[size]);
 void flip_rows_matrix(int size, BlockTypes matrix[size][size]);
-// END ROTATE 
+// END ROTATE
+// MOVE
+void general_move(Tetroncios *tetron, int x_increment, int y_increment); // y 20 x 40 los limites
+// END MOVE 
 #endif // !TETRONCIOS_H

@@ -14,7 +14,9 @@ int main (void)
 {
   init_terminal();
   Tetroncios piece = mk_tetroncios(Z, 1, 1);
- 
+
+  draw_one_piece(&piece);
+
   while (1)
   {
     char c = read_key();
@@ -27,17 +29,47 @@ int main (void)
       case 'k': case 'K':
         rotate(&piece, true);
         break;
+      case 'w':
+        general_move(&piece, 0, -1);
+        break;
+      case 's':
+        general_move(&piece, 0, 1);
+        break;
+      case 'd':
+        general_move(&piece, 1, 0);
+        break;
+      case 'a':
+        general_move(&piece, -1, 0);
+        break;
       case 'q':
         exit(0);
     }
 
     clear_screen();
+    // flush();
     draw_one_piece(&piece);
+
+    flush();
 
     usleep(1000000/60);
   }
 
   exit(0);
+}
+
+void general_move(Tetroncios *tetron, int x_increment, int y_increment)
+{
+  x_increment *= 2;
+
+  if (y_increment && (tetron->pos.y + y_increment) >= 1 && (tetron->pos.y + y_increment) <= 20)
+  {
+    tetron->pos.y += y_increment;
+  }
+
+  if (x_increment && (tetron->pos.x + x_increment) >= 1 && (tetron->pos.x + x_increment) <= 20 * 2 - 1)
+  {
+    tetron->pos.x += x_increment;
+  }
 }
 
 void rotate(Tetroncios *tetron, bool clockwise)
@@ -140,7 +172,6 @@ void draw_one_piece(Tetroncios *tetron)
       }
     }
   }
-
   flush();
 }
 
@@ -230,6 +261,8 @@ void draw_one_block(BlockTypes te_type, int x, int y)
   switch (te_type)
   {
     case N:
+      move_cursor(x,y); // later on erase 
+      printf("  ");
       return;
     case I:
       printf(CIAN);
@@ -256,6 +289,5 @@ void draw_one_block(BlockTypes te_type, int x, int y)
   move_cursor(x, y);
   printf(BLOCK);
   printf(RESET);
-  flush();
 }
 
