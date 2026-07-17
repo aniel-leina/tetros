@@ -4,6 +4,8 @@
 
 #include "utils.h"
 
+typedef struct board Board;
+
 typedef enum{
   N, // cero
   I, // cian 4
@@ -28,10 +30,10 @@ typedef struct tetroncios {
 } Tetroncios;
 
 // MAKE TETRON 
-Tetroncios mk_tetroncios(BlockTypes te_type, int x, int y);
+Tetroncios mk_tetroncios(Board *board, BlockTypes te_type);
 // END MAKE TETRON
 // UPDATE
-void update_tetron(Tetroncios *tetron, char comando);
+void update_tetron(Board *board, Tetroncios *tetron, char comando);
 // END UPDATE
 // DRAW TETRON 
 void draw_tetron(Tetroncios *tetron);
@@ -47,11 +49,11 @@ void flip_row(int size, BlockTypes array[size]);
 void flip_rows_matrix(int size, BlockTypes matrix[size][size]);
 // END ROTATE
 // MOVE
-void move_piece(Tetroncios *tetron, char comando);
+void move_piece(Board *board, Tetroncios *tetron, char comando);
 void hard_drop(Tetroncios *tetron);
 void soft_drop_fixed(Tetroncios *tetron);
 void gravity(Tetroncios *tetron, int level);
-void reset_piece_pos(Tetroncios *tetron);
+void reset_piece_pos(Board *board, Tetroncios *tetron);
 void general_move(Tetroncios *tetron, int x_increment, int y_increment); // y 20 x 40 los limites
 // END MOVE 
 #endif // !TETRONCIOS_H

@@ -1,13 +1,15 @@
-#include "utils.h"
-#include "tetroncios.h"
-#include "myInput.h"
-#include "cursor.h"
-#include "assets.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+
+#include "utils.h"
+#include "tetroncios.h"
+#include "myInput.h"
+#include "cursor.h"
+#include "assets.h"
+#include "board.h"
 
 
 /*int main (void)
@@ -32,30 +34,38 @@
 
 void draw_tetron(Tetroncios *tetron)
 {
-  clear_screen();
   draw_one_piece(tetron);
   flush();
 }
 
-void update_tetron(Tetroncios *tetron, char comando)
+void update_tetron(Board *board, Tetroncios *tetron, char comando)
 {
+  Tetroncios cpy_tetron = *tetron;
+
   switch (comando)
   {
     case 'j': case 'J':
-      rotate(tetron, false);
+      rotate(&cpy_tetron, false);
       break;
     case 'k': case 'K':
-      rotate(tetron, true);
+      rotate(&cpy_tetron, true);
       break;
   }
+  move_piece(board, &cpy_tetron, comando);
 
-  move_piece(tetron, comando);
+  if (!out_of_bounds(board, &cpy_tetron))
+  {
+    *tetron = cpy_tetron;
+  }
 }
 
-void move_piece(Tetroncios *tetron, char comando)
+void move_piece(Board *board, Tetroncios *tetron, char comando)
 {
   switch (comando)
   {
+    case 'w':
+      general_move(tetron, 0, -1);
+      break;
     case ' ':
       hard_drop(tetron);
       break;
@@ -63,7 +73,7 @@ void move_piece(Tetroncios *tetron, char comando)
       soft_drop_fixed(tetron);
       break;
     case 'r': case 'R':
-      reset_piece_pos(tetron);
+      reset_piece_pos(board, tetron);
     default: 
       gravity(tetron, 0);
       break;
@@ -115,25 +125,21 @@ void gravity(Tetroncios *tetron, int level)
   }
 }
 
-void reset_piece_pos(Tetroncios *tetron)
+void reset_piece_pos(Board *board, Tetroncios *tetron)
 {
-  tetron->pos.x = 1;
-  tetron->pos.y = 1;
-}
+  // x since one bloxk is 2 x then if i want to reset the piece to the half of the board the 2 cancel each other out
+  // y at the top
+  //
+  tetron->pos = board->pos;
 
+  tetron->pos.x = board->pos.x + (CELLS_WIDTH / 2 - tetron->size / 2) * 2; // board origin + (ideal pos relative to the origin) * 2 to fix the one block = 2 x 
+}
 void general_move(Tetroncios *tetron, int x_increment, int y_increment)
 {
   x_increment *= 2;
 
-  if (y_increment && (tetron->pos.y + y_increment) >= 1 && (tetron->pos.y + y_increment) <= 20)
-  {
-    tetron->pos.y += y_increment;
-  }
-
-  if (x_increment && (tetron->pos.x + x_increment) >= 1 && (tetron->pos.x + x_increment) <= 20 * 2 - 1)
-  {
-    tetron->pos.x += x_increment;
-  }
+  tetron->pos.y += y_increment;
+  tetron->pos.x += x_increment;
 }
 
 void rotate(Tetroncios *tetron, bool clockwise)
@@ -239,9 +245,9 @@ void draw_one_piece(Tetroncios *tetron)
   flush();
 }
 
-Tetroncios mk_tetroncios(BlockTypes te_type, int x, int y)
+Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
 {
-  Point pos = {x,y};
+  Point pos;
   int size;
 
   switch (te_type)
@@ -252,10 +258,13 @@ Tetroncios mk_tetroncios(BlockTypes te_type, int x, int y)
     default:
       printf("L23 archivo tetroncios, tipo no registrado\n");
       break;
-  }
+  } 
+
+  pos = board->pos;
+
+  pos.x = board->pos.x + (CELLS_WIDTH / 2 - size / 2) * 2;
 
   Tetroncios piece = {.size = size, .pos = pos};
-    
 
   switch (te_type)
   {
@@ -325,8 +334,8 @@ void draw_one_block(BlockTypes te_type, int x, int y)
   switch (te_type)
   {
     case N:
-      move_cursor(x,y); // later on erase 
-      printf("  ");
+      // move_cursor(x,y); // later on erase 
+      // printf("  ");
       return;
     case I:
       printf(CIAN);
