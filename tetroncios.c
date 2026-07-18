@@ -105,6 +105,7 @@ void update_tetron(Board *board, Tetroncios *tetron, char comando)
       hard_drop(board, &cpy_tetron, 0);
       add_one_piece(board, &cpy_tetron);
       reset_piece_pos(board, &cpy_tetron);
+      *tetron = cpy_tetron;
       return;
     case 's':
       soft_drop_fixed(&cpy_tetron);
