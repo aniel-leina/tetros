@@ -9,6 +9,7 @@
 #define CELLS_WIDTH 15
 #define NUMBER_OF_PIECES 7
 #define BOARD_WS BG_W
+#define FRAME_COUNT 25
 
 typedef struct bag {
   Tetroncios list[NUMBER_OF_PIECES];
@@ -37,7 +38,7 @@ void add_one_piece(Board *board, Tetroncios *tetron);
 void add_one_piece_v2(Board *board, Tetroncios *tetron);
 bool one_line_filled(BlockTypes line[], int size);
 void erase_one_line(Board *board, int line_index);
-void clean_filled_lines(Board *board);
+int clean_filled_lines(Board *board);
 void clean_board(Board *board);
 // END BOARD OPERATIONS
 // MOVEMENT VALIDATION 

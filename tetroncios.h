@@ -5,6 +5,8 @@
 #include "utils.h"
 #include <stdbool.h>
 
+#define DL_CHANCES 15
+
 typedef struct board Board;
 
 typedef enum{
@@ -25,15 +27,25 @@ typedef union {
   BlockTypes r4[4][4];
 } Range;
 
+typedef struct miscellanous {
+  int sft_drp_frm_cnt;
+  int grvt_frm_cnt;
+  int dl_lck_rst_cnt;
+  int dl_lck_frm_cnt;
+  int dl_lck_dpst_y;
+  bool dl_lck_grnd;
+} Miscellanous;
+
 typedef struct tetroncios {
   int size;
   Point pos;
   Range set;
-  bool grounded;
+  Miscellanous extra;
 } Tetroncios;
 
 // MAKE TETRON 
 Tetroncios mk_tetroncios(Board *board, BlockTypes te_type);
+Miscellanous mk_miscellanous(int deepest_y);
 // END MAKE TETRON
 // UPDATE
 void update_tetron(Board *board, Tetroncios *tetron, char comando);
@@ -56,7 +68,10 @@ void flip_row(int size, BlockTypes array[size]);
 void flip_rows_matrix(int size, BlockTypes matrix[size][size]);
 // END ROTATE
 // MOVE
-void move_piece(Board *board, Tetroncios *tetron, char comando);
+bool move_piece_y(Board *board, Tetroncios *tetron, char comando); // devuelve true si hay movimiento intencionado que 
+bool move_piece_x(Board *board, Tetroncios *tetorn, char comando); // es parte del metodo
+bool move_piece_rest(Board *board, Tetroncios *tetron, char comando);
+void move_piece_resets(Board *board, Tetroncios *tetron, char comando);
 void hard_drop(Board *board, Tetroncios *tetron, int iteration); // iteration es para evitar que si al resetear bloqueo ahi osea piezas campeando en spawn el menos menos pueda hacer que se mueva hacia arriba
 void soft_drop_fixed(Tetroncios *tetron);
 void gravity(Tetroncios *tetron, int level);

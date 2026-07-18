@@ -68,15 +68,19 @@ void erase_one_line(Board *board, int line_index)
   }
 }
 
-void clean_filled_lines(Board *board) // opero en el array ya que se avanza hacia adelante pero se borra cosas de atras osea no molesta la parte de adelante
+int clean_filled_lines(Board *board) // opero en el array ya que se avanza hacia adelante pero se borra cosas de atras osea no molesta la parte de adelante
 {
+  int filled_count = 0;
   for (int i = 0; i < CELLS_HIGH; i++)
   {
     if (one_line_filled(board->cells[i], CELLS_WIDTH))
     {
       erase_one_line(board, i);
+      filled_count++;
     }
   }
+
+  return filled_count;
 }
 
 bool ilegal_move(Board *board, Tetroncios *tetron) // this will receive a copy reference
