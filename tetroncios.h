@@ -3,6 +3,7 @@
 
 
 #include "utils.h"
+#include <stdbool.h>
 
 typedef struct board Board;
 
@@ -15,6 +16,7 @@ typedef enum{
   S, // verde 3
   T, // morado 3
   Z, // rojo 3
+  BG_W, // fondo para board;
 } BlockTypes;
 
 typedef union {
@@ -27,6 +29,7 @@ typedef struct tetroncios {
   int size;
   Point pos;
   Range set;
+  bool grounded;
 } Tetroncios;
 
 // MAKE TETRON 
@@ -41,6 +44,10 @@ void draw_one_block(BlockTypes te_type, int x, int y);
 void draw_one_piece(Tetroncios *tetron);
 //END DRAWING TETRON 
 //
+// LOCK
+void delay_lock(Board *board, Tetroncios *tetron, bool just_moved);
+// END LOCK
+//
 // ROTATE 
 void rotate(Tetroncios *tetron, bool clockwise);
 void swap(BlockTypes *a, BlockTypes *b);
@@ -50,7 +57,7 @@ void flip_rows_matrix(int size, BlockTypes matrix[size][size]);
 // END ROTATE
 // MOVE
 void move_piece(Board *board, Tetroncios *tetron, char comando);
-void hard_drop(Tetroncios *tetron);
+void hard_drop(Board *board, Tetroncios *tetron);
 void soft_drop_fixed(Tetroncios *tetron);
 void gravity(Tetroncios *tetron, int level);
 void reset_piece_pos(Board *board, Tetroncios *tetron);

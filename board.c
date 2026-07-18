@@ -16,7 +16,7 @@ int main (void)
   srand(time(NULL));
 
   Board board = mk_board(CELLS_HIGH, CELLS_WIDTH, 22, 12);
-  Tetroncios piece = mk_tetroncios(&board, L);
+  Tetroncios piece = mk_tetroncios(&board, I);
   char c;
 
   while (true)
@@ -24,9 +24,13 @@ int main (void)
     c = read_key();
 
     if (c == 'q') break;
-    if (c == 'n') add_one_piece(&board, &piece); 
-
+    if (c == 'n') 
+    {
+      add_one_piece_v2(&board, &piece); 
+      reset_piece_pos(&board, &piece);
+    }
     update_tetron(&board, &piece, c);
+    clean_filled_lines(&board);
     clear_screen();
 
     draw_board(&board);
@@ -38,9 +42,76 @@ int main (void)
   exit(0);
 }
 
+bool one_line_filled(BlockTypes line[], int size)
+{
+  for (int i = 0; i < size; i++)
+  {
+    if (line[i] == BOARD_WS) return false;
+  }
+
+  return true;
+}
+
+void erase_one_line(Board *board, int line_index)
+{
+  for (int i = line_index; i > 0; i--)
+  {
+    for (int j = 0; j < CELLS_WIDTH; j++)
+    {
+      swap(&board->cells[i][j], &board->cells[i-1][j]);
+    }
+  }
+
+  for (int i = 0; i < CELLS_WIDTH; i++)
+  {
+    board->cells[0][i] = BOARD_WS;
+  }
+}
+
+void clean_filled_lines(Board *board) // opero en el array ya que se avanza hacia adelante pero se borra cosas de atras osea no molesta la parte de adelante
+{
+  for (int i = 0; i < CELLS_HIGH; i++)
+  {
+    if (one_line_filled(board->cells[i], CELLS_WIDTH))
+    {
+      erase_one_line(board, i);
+    }
+  }
+}
+
 bool ilegal_move(Board *board, Tetroncios *tetron) // this will receive a copy reference
 {
-  ;
+  if (check_collisions(board, tetron)) return true;
+  if (out_of_bounds(board, tetron)) return true;
+}
+
+bool check_collisions(Board *board, Tetroncios *tetron)
+{
+  int pos_x, pos_y;
+
+  for (int i = 0; i < tetron->size; i++)
+  {
+    pos_y = (tetron->pos.y - board->pos.y) + i;
+    for (int j = 0; j < tetron->size; j++)
+    {
+      pos_x = (tetron->pos.x - board->pos.x) / 2 + j;
+      switch (tetron->size)
+      {
+        case 2:
+          if (tetron->set.r2[i][j] == N) continue;
+          break;
+        case 3:
+          if (tetron->set.r3[i][j] == N) continue;
+          break;
+        case 4:
+          if (tetron->set.r4[i][j] == N) continue;
+          break;
+      }
+
+      if (board->cells[pos_y][pos_x] != BG_W) return true;
+    }
+  }
+  return false;
 }
 
 bool out_of_bounds(Board *board, Tetroncios *tetron)
@@ -100,25 +171,56 @@ void add_one_piece(Board *board, Tetroncios *tetron)
   }
 }
 
+void add_one_piece_v2(Board *board, Tetroncios *tetron)
+{
+  int pos_x, pos_y;
+
+  for (int i = 0; i < tetron->size; i++)
+  {
+    pos_y = (tetron->pos.y - board->pos.y) + i;
+    for (int j = 0; j < tetron->size; j++)
+    {
+      pos_x = (tetron->pos.x - board->pos.x) / 2 + j;
+
+      switch (tetron->size)
+      {
+        case 2:
+          if (tetron->set.r2[i][j] == N) break;
+          board->cells[pos_y][pos_x] = tetron->set.r2[i][j];
+          break;
+        case 3:
+          if (tetron->set.r3[i][j] == N) break;
+          board->cells[pos_y][pos_x] = tetron->set.r3[i][j];
+          break;
+        case 4:
+          if (tetron->set.r4[i][j] == N) break;
+          board->cells[pos_y][pos_x] = tetron->set.r4[i][j];
+          break;
+      }
+    }
+  }
+}
+
 void draw_board(Board *board)
 {
-  bool zig_zag = false;
+  //bool zig_zag = false;
+  int pos_y, pos_x;
   for (int i = 0; i < CELLS_HIGH; i++)
   {
-    int pos_y = board->pos.y + i;
+    pos_y = board->pos.y + i;
     for (int j = 0; j < CELLS_WIDTH; j++)
     {
-      int pos_x = board->pos.x + j * 2;
-      // draw_one_block(board->cells[i][j], pos_x, pos_y);
-      if (zig_zag) 
-      {
-        draw_one_block(Z, pos_x, pos_y);
-        zig_zag = !zig_zag;
-      } else 
-      {
-        draw_one_block(S, pos_x, pos_y);
-        zig_zag = !zig_zag;
-      }
+      pos_x = board->pos.x + j * 2;
+      draw_one_block(board->cells[i][j], pos_x, pos_y);
+      //if (zig_zag) 
+      //{
+      //  draw_one_block(Z, pos_x, pos_y);
+      //  zig_zag = !zig_zag;
+      //} else 
+      //{
+      //  draw_one_block(S, pos_x, pos_y);
+      //  zig_zag = !zig_zag;
+      //}
     }
   }
 
@@ -135,7 +237,7 @@ Board mk_board(int high, int width, int x, int y)
   {
     for (int j = 0; j < width; j++)
     {
-      board.cells[i][j] = (BlockTypes) N;
+      board.cells[i][j] = (BlockTypes) BOARD_WS;
     }
   }
 

@@ -8,6 +8,7 @@
 #define CELLS_HIGH 21
 #define CELLS_WIDTH 15
 #define NUMBER_OF_PIECES 7
+#define BOARD_WS BG_W
 
 typedef struct bag {
   Tetroncios list[NUMBER_OF_PIECES];
@@ -30,10 +31,17 @@ Bag mk_random_bag(Board *board, int n_pieces);
 
 // DRAW BOARD
 void draw_board(Board *board);
-void add_one_piece(Board *board, Tetroncios *tetron);
 // END DRAW BOARD
+// BOARD OPERATIONS
+void add_one_piece(Board *board, Tetroncios *tetron);
+void add_one_piece_v2(Board *board, Tetroncios *tetron);
+bool one_line_filled(BlockTypes line[], int size);
+void erase_one_line(Board *board, int line_index);
+void clean_filled_lines(Board *board);
+// END BOARD OPERATIONS
 // MOVEMENT VALIDATION 
 bool ilegal_move(Board *board, Tetroncios *tetron); //this will receive the reference of a copy 
 bool out_of_bounds(Board *board, Tetroncios *tetron);
+bool check_collisions(Board *board, Tetroncios *tetron);
 // END MOVEMENT VALIDATION 
 #endif

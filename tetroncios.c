@@ -32,6 +32,48 @@
   exit(0);
 }*/
 
+void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
+{
+  static int reset_count = 15;
+  static int frame_count = 13; // mitad de frame rate
+  static bool first_time = true; // ya que deepest_y no se puede iniciar con variable
+  static int deepest_y = 0;
+
+  if (first_time)
+  {
+    deepest_y = tetron->pos.y;
+    first_time = false;
+  }
+
+  if (!tetron->grounded) {
+    reset_count = 15;
+    frame_count = 13;
+    deepest_y = tetron->pos.y;
+    return; // asumimos que algun momento el grounded se setea
+  }
+  if (frame_count == 0) {
+    add_one_piece(board, tetron);
+    reset_piece_pos(board, tetron);
+    tetron->grounded = false;
+    return; // gestionar el resultado de que se bloquee reinicuar
+  }
+
+  if (just_moved && reset_count > 0)
+  {
+    frame_count = 13;
+    reset_count--;
+  }
+
+  if (tetron->pos.y > deepest_y) {
+    //reset_count = 15;
+    //frame_count = 13; si lo pongo arriba tiene el mismo efecto y es mas seguro
+    //deepest_y = tetron->pos.y;
+    tetron->grounded = false;
+  }
+
+  frame_count--;
+}
+
 void draw_tetron(Tetroncios *tetron)
 {
   draw_one_piece(tetron);
@@ -41,41 +83,47 @@ void draw_tetron(Tetroncios *tetron)
 void update_tetron(Board *board, Tetroncios *tetron, char comando)
 {
   Tetroncios cpy_tetron = *tetron;
+  int initial_y = tetron->pos.y; // to check if i need to ground
+  bool just_moved = false; // this is to help the delayed lock
 
-  switch (comando)
-  {
-    case 'j': case 'J':
-      rotate(&cpy_tetron, false);
-      break;
-    case 'k': case 'K':
-      rotate(&cpy_tetron, true);
-      break;
-  }
   move_piece(board, &cpy_tetron, comando);
 
-  if (!out_of_bounds(board, &cpy_tetron))
+  if (!ilegal_move(board, &cpy_tetron))
   {
     *tetron = cpy_tetron;
-  }
+    just_moved = true;
+  } else {
+    cpy_tetron = *tetron; // para cancelar el antiguo movimiento
+  } 
+
+  switch (comando)
+    {
+      case 'w': case ' ': case 's': case 'r':
+        break;
+      default:
+        gravity(&cpy_tetron, 0);
+    }
+
+  if (!ilegal_move(board, &cpy_tetron))
+  {
+    *tetron = cpy_tetron;
+    just_moved = true;
+  } else if (tetron->pos.y == initial_y) tetron->grounded = true;
+
+  // solo has movido izq derecha o girado
+  
+  delay_lock(board, tetron, just_moved);
 }
 
 void move_piece(Board *board, Tetroncios *tetron, char comando)
 {
   switch (comando)
   {
-    case 'w':
-      general_move(tetron, 0, -1);
+    case 'j': case 'J':
+      rotate(tetron, false);
       break;
-    case ' ':
-      hard_drop(tetron);
-      break;
-    case 's':
-      soft_drop_fixed(tetron);
-      break;
-    case 'r': case 'R':
-      reset_piece_pos(board, tetron);
-    default: 
-      gravity(tetron, 0);
+    case 'k': case 'K':
+      rotate(tetron, true);
       break;
   }
 
@@ -88,11 +136,35 @@ void move_piece(Board *board, Tetroncios *tetron, char comando)
       general_move(tetron, -1, 0);
       break;
   }
+
+  switch (comando)
+  {
+    case 'w':
+      general_move(tetron, 0, -1);
+      break;
+    case ' ':
+      hard_drop(board, tetron);
+      add_one_piece(board, tetron);
+      reset_piece_pos(board, tetron);
+      break;
+    case 's':
+      soft_drop_fixed(tetron);
+      break;
+    case 'r':
+      reset_piece_pos(board, tetron);
+      break;
+  }
 }
 
-void hard_drop(Tetroncios *tetron)
+void hard_drop(Board *board, Tetroncios *tetron)
 {
-  return;
+  if (ilegal_move(board, tetron)) {
+    tetron->pos.y--;
+    return;
+  } else {
+    tetron->pos.y++;
+    hard_drop(board, tetron);
+  }
 }
 
 void soft_drop_fixed(Tetroncios *tetron)
@@ -264,7 +336,7 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
 
   pos.x = board->pos.x + (CELLS_WIDTH / 2 - size / 2) * 2;
 
-  Tetroncios piece = {.size = size, .pos = pos};
+  Tetroncios piece = {.size = size, .pos = pos, .grounded = false};
 
   switch (te_type)
   {
@@ -334,9 +406,12 @@ void draw_one_block(BlockTypes te_type, int x, int y)
   switch (te_type)
   {
     case N:
-      // move_cursor(x,y); // later on erase 
-      // printf("  ");
       return;
+    case BG_W:
+      // move_cursor(x,y); // later on erase 
+      printf(BG_GRIS);
+      break;
+      //return;
     case I:
       printf(CIAN);
       break;
