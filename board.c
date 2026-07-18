@@ -227,6 +227,17 @@ void draw_board(Board *board)
   flush();
 }
 
+void clean_board(Board *board)
+{
+  for (int i = 0; i < CELLS_HIGH; i++)
+  {
+    for (int j = 0; j < CELLS_WIDTH; j++)
+    {
+      board->cells[i][j] = (BlockTypes) BOARD_WS;
+    }
+  }
+}
+
 Board mk_board(int high, int width, int x, int y)
 {
   Board board = {

@@ -38,6 +38,7 @@ void add_one_piece_v2(Board *board, Tetroncios *tetron);
 bool one_line_filled(BlockTypes line[], int size);
 void erase_one_line(Board *board, int line_index);
 void clean_filled_lines(Board *board);
+void clean_board(Board *board);
 // END BOARD OPERATIONS
 // MOVEMENT VALIDATION 
 bool ilegal_move(Board *board, Tetroncios *tetron); //this will receive the reference of a copy 

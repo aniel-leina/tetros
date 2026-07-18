@@ -143,7 +143,7 @@ void move_piece(Board *board, Tetroncios *tetron, char comando)
       general_move(tetron, 0, -1);
       break;
     case ' ':
-      hard_drop(board, tetron);
+      hard_drop(board, tetron, 0);
       add_one_piece(board, tetron);
       reset_piece_pos(board, tetron);
       break;
@@ -156,14 +156,15 @@ void move_piece(Board *board, Tetroncios *tetron, char comando)
   }
 }
 
-void hard_drop(Board *board, Tetroncios *tetron)
+void hard_drop(Board *board, Tetroncios *tetron, int iteration)
 {
   if (ilegal_move(board, tetron)) {
+    if (iteration == 0) return;
     tetron->pos.y--;
     return;
   } else {
     tetron->pos.y++;
-    hard_drop(board, tetron);
+    hard_drop(board, tetron, ++iteration);
   }
 }
 
@@ -202,9 +203,12 @@ void reset_piece_pos(Board *board, Tetroncios *tetron)
   // x since one bloxk is 2 x then if i want to reset the piece to the half of the board the 2 cancel each other out
   // y at the top
   //
-  tetron->pos = board->pos;
+  //tetron->pos = board->pos;
 
-  tetron->pos.x = board->pos.x + (CELLS_WIDTH / 2 - tetron->size / 2) * 2; // board origin + (ideal pos relative to the origin) * 2 to fix the one block = 2 x 
+  tetron->pos.y = board->pos.y + 1;
+
+  tetron->pos.x = board->pos.x + (CELLS_WIDTH / 2 - tetron->size / 2) * 2; // board origin + (ideal pos relative to the origin) * 2 to fix the one block = 2 x
+  if (ilegal_move(board, tetron)) clean_board(board);
 }
 void general_move(Tetroncios *tetron, int x_increment, int y_increment)
 {

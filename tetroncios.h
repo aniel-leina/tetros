@@ -57,7 +57,7 @@ void flip_rows_matrix(int size, BlockTypes matrix[size][size]);
 // END ROTATE
 // MOVE
 void move_piece(Board *board, Tetroncios *tetron, char comando);
-void hard_drop(Board *board, Tetroncios *tetron);
+void hard_drop(Board *board, Tetroncios *tetron, int iteration); // iteration es para evitar que si al resetear bloqueo ahi osea piezas campeando en spawn el menos menos pueda hacer que se mueva hacia arriba
 void soft_drop_fixed(Tetroncios *tetron);
 void gravity(Tetroncios *tetron, int level);
 void reset_piece_pos(Board *board, Tetroncios *tetron);
