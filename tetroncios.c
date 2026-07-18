@@ -98,8 +98,20 @@ void update_tetron(Board *board, Tetroncios *tetron, char comando)
 
   switch (comando)
     {
-      case 'w': case ' ': case 's': case 'r':
-        break;
+     case 'w':
+      general_move(&cpy_tetron, 0, -1);
+      break;
+    case ' ':
+      hard_drop(board, &cpy_tetron, 0);
+      add_one_piece(board, &cpy_tetron);
+      reset_piece_pos(board, &cpy_tetron);
+      return;
+    case 's':
+      soft_drop_fixed(&cpy_tetron);
+      break;
+    case 'r':
+      reset_piece_pos(board, &cpy_tetron);
+      break;
       default:
         gravity(&cpy_tetron, 0);
     }
@@ -137,23 +149,7 @@ void move_piece(Board *board, Tetroncios *tetron, char comando)
       break;
   }
 
-  switch (comando)
-  {
-    case 'w':
-      general_move(tetron, 0, -1);
-      break;
-    case ' ':
-      hard_drop(board, tetron, 0);
-      add_one_piece(board, tetron);
-      reset_piece_pos(board, tetron);
-      break;
-    case 's':
-      soft_drop_fixed(tetron);
-      break;
-    case 'r':
-      reset_piece_pos(board, tetron);
-      break;
-  }
+ 
 }
 
 void hard_drop(Board *board, Tetroncios *tetron, int iteration)
