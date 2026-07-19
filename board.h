@@ -5,14 +5,15 @@
 #include "utils.h"
 #include <stdbool.h>
 
-#define CELLS_HIGH 21
-#define CELLS_WIDTH 15
+#define CELLS_HIGH 20
+#define CELLS_WIDTH 10
 #define NUMBER_OF_PIECES 7
 #define BOARD_WS BG_W
 #define FRAME_COUNT 25
 
 typedef struct bag {
   Tetroncios list[NUMBER_OF_PIECES];
+  int next_piece;
 } Bag;
 
 

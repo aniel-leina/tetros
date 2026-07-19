@@ -45,15 +45,20 @@ typedef struct tetroncios {
 
 // MAKE TETRON 
 Tetroncios mk_tetroncios(Board *board, BlockTypes te_type);
+void cpy_to_set_piece(Tetroncios *tetron, BlockTypes te_type);
 Miscellanous mk_miscellanous(int deepest_y);
 // END MAKE TETRON
 // UPDATE
 void update_tetron(Board *board, Tetroncios *tetron, char comando);
+void reset_piece(Board *board, Tetroncios *tetron);
+void choose_next_piece(Board *board, Tetroncios *tetron);
 // END UPDATE
 // DRAW TETRON 
-void draw_tetron(Tetroncios *tetron);
+void draw_tetron(Board *board, Tetroncios *tetron);
 void draw_one_block(BlockTypes te_type, int x, int y);
+void draw_one_block_b(BlockTypes te_type, int x, int y);
 void draw_one_piece(Tetroncios *tetron);
+void draw_shadow(Board *board, Tetroncios *tetron);
 //END DRAWING TETRON 
 //
 // LOCK

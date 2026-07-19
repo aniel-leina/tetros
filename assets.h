@@ -16,14 +16,15 @@
 
 // --- EXTRAS 1: COLORES BRILLANTES ---
 // Si tu terminal tiene poco contraste o usas un tema muy oscuro, estos se ven más vivos
-#define CIAN_B      "\x1b[96m"
-#define AZUL_B      "\x1b[94m"
-#define AMARILLO_B  "\x1b[93m"
-#define VERDE_B     "\x1b[92m"
-#define MORADO_B    "\x1b[95m"
-#define ROJO_B      "\x1b[91m"
-#define BLANCO_B    "\x1b[97m"
-
+// --- COLORES DE PIEZAS BRILLANTES (Alta Intensidad) ---
+#define CIAN_B      "\x1b[96m"       // Pieza I
+#define AZUL_B      "\x1b[94m"       // Pieza J
+#define NARANJA_B   "\x1b[38;5;214m" // Pieza L (Naranja más eléctrico/vivo)
+#define AMARILLO_B  "\x1b[93m"       // Pieza O
+#define VERDE_B     "\x1b[92m"       // Pieza S
+#define MORADO_B    "\x1b[95m"       // Pieza T
+#define ROJO_B      "\x1b[91m"       // Pieza Z
+#define BLANCO_B    "\x1b[97m"       // (Opcional, útil para textos o la UI)
 // --- EXTRAS 2: COLORES DE FONDO (BACKGROUND) ---
 // Ideales para pintar las paredes del pozo o un menú
 #define BG_GRIS     "\x1b[100m" // Fondo gris oscuro para la cuadrícula vacía

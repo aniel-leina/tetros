@@ -17,6 +17,7 @@ int main (void)
 
   Board board = mk_board(CELLS_HIGH, CELLS_WIDTH, 22, 12);
   Tetroncios piece = mk_tetroncios(&board, I);
+  choose_next_piece(&board, &piece);
   char c;
 
   while (true)
@@ -24,17 +25,12 @@ int main (void)
     c = read_key();
 
     if (c == 'q') break;
-    if (c == 'n') 
-    {
-      add_one_piece_v2(&board, &piece); 
-      reset_piece_pos(&board, &piece);
-    }
     update_tetron(&board, &piece, c);
     clean_filled_lines(&board);
     clear_screen();
 
     draw_board(&board);
-    draw_tetron(&piece);
+    draw_tetron(&board, &piece);
 
     usleep(1000000/25);
   }
@@ -148,7 +144,7 @@ bool out_of_bounds(Board *board, Tetroncios *tetron)
   return false;
 }
 
-void add_one_piece(Board *board, Tetroncios *tetron)
+/*void add_one_piece(Board *board, Tetroncios *tetron)
 {
   for (int i = 0; i < tetron->size; i++)
   {
@@ -173,9 +169,9 @@ void add_one_piece(Board *board, Tetroncios *tetron)
       }
     }
   }
-}
+}*/
 
-void add_one_piece_v2(Board *board, Tetroncios *tetron)
+void add_one_piece(Board *board, Tetroncios *tetron)
 {
   int pos_x, pos_y;
 
@@ -261,10 +257,13 @@ Board mk_board(int high, int width, int x, int y)
   return board;
 }
 
-Bag mk_random_bag(Board *board, int n_pieces)
+Bag mk_random_bag(Board *board, int n_pieces) // board es para que las piezas creadas tengan coordenadas buenas
 {
   BlockTypes linear_bag[n_pieces];
-  Bag random_bag;
+  Bag random_bag = 
+    {
+      .next_piece = 0
+    };
 
   for (BlockTypes i = (BlockTypes) 1; i <= (BlockTypes) n_pieces; i++)
   {

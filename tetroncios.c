@@ -12,78 +12,24 @@
 #include "board.h"
 
 
-/*int main (void)
+void reset_piece(Board *board, Tetroncios *tetron)
 {
-  init_terminal();
-  Tetroncios piece = mk_tetroncios(T, 1, 1);
+  reset_piece_pos(board, tetron);
+  if (ilegal_move(board, tetron)) clean_board(board);
+  tetron->extra = mk_miscellanous(tetron->pos.y);
+}
 
-  while (1)
-  {
-    char c = read_key();
-
-    if (c == 'q') break;
-
-    update_tetron(&piece, c);
-    draw_tetron(&piece);
-    
-    usleep(1000000/25);
-  }
-
-  exit(0);
-}*/
-
-/*void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
+void choose_next_piece(Board *board, Tetroncios *tetron)
 {
-  //static int reset_count = 15;
-  //static int frame_count = 13; // mitad de frame rate
-  // static bool first_time = true; // ya que deepest_y no se puede iniciar con variable
-  //static int deepest_y = 0;
+  *tetron = board->bag.list[board->bag.next_piece++];
 
-  if (first_time) {
-    deepest_y = tetron->pos.y;
-    first_time = false;
-  }
+  if (ilegal_move(board, tetron)) clean_board(board);
 
-  tetron->pos.y++;
-
-  if (ilegal_move(board, tetron)) {
-    tetron->extra.dl_lck_grnd = true;
-  } else if (tetron->pos.y >= tetron->extra.dl_lck_dpst_y){
-    // tetron->extra.dl_lck_grnd = false;
+  if (board->bag.next_piece == NUMBER_OF_PIECES) {
+    board->bag = mk_random_bag(board, NUMBER_OF_PIECES);
   }
   
-  tetron->pos.y--;
-
-  if (!tetron->extra.dl_lck_grnd) {
-    tetron->extra.dl_lck_rst_cnt = 15;
-    tetron->extra.dl_lck_frm_cnt = (int) (FRAME_COUNT / 2);
-    tetron->extra.dl_lck_dpst_y = tetron->pos.y;
-    return; // asumimos que algun momento el grounded se setea
-  }
-
-  
-  if (tetron->extra.dl_lck_frm_cnt == 0) {
-    add_one_piece(board, tetron);
-    reset_piece_pos(board, tetron);
-    tetron->extra.dl_lck_grnd = false;
-    return; // gestionar el resultado de que se bloquee reinicuar
-  }
-
-  if (just_moved && tetron->extra.dl_lck_rst_cnt > 0)
-  {
-    tetron->extra.dl_lck_frm_cnt = (int) (FRAME_COUNT / 2);
-    tetron->extra.dl_lck_rst_cnt--;
-  }
-
-  if (tetron->pos.y > tetron->extra.dl_lck_dpst_y) {
-    //reset_count = 15;
-    //frame_count = 13; si lo pongo arriba tiene el mismo efecto y es mas seguro
-    //deepest_y = tetron->pos.y;
-    tetron->extra.dl_lck_grnd = false;
-  }
-
-  tetron->extra.dl_lck_frm_cnt--;
-} */
+}
 
 void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
 {
@@ -111,11 +57,8 @@ void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
     if (tetron->extra.dl_lck_frm_cnt <= 0 || tetron->extra.dl_lck_rst_cnt <= 0) {
       // bloquearlo
       add_one_piece(board, tetron);
-      reset_piece_pos(board, tetron);
-      tetron->extra.dl_lck_dpst_y = tetron->pos.y;
-      tetron->extra.dl_lck_rst_cnt = DL_CHANCES;
-      tetron->extra.dl_lck_grnd = false;
-      tetron->extra.dl_lck_frm_cnt = (int) (FRAME_COUNT / 2);
+      //reset_piece(board, tetron);
+      choose_next_piece(board, tetron);
       return;
     }
     // si toca suelo y esta en una y q no es mas baja que el y mas bajo guardado
@@ -145,8 +88,9 @@ void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
   }*/
 }
 
-void draw_tetron(Tetroncios *tetron)
+void draw_tetron(Board *board, Tetroncios *tetron)
 {
+  draw_shadow(board, tetron);
   draw_one_piece(tetron);
   flush();
 }
@@ -226,10 +170,15 @@ void move_piece_resets(Board *board, Tetroncios *tetron, char comando)
   {
     case ' ':
       add_one_piece(board, tetron);
-      reset_piece_pos(board, tetron);
+      //reset_piece(board, tetron);
+      choose_next_piece(board, tetron);
       break;
     case 'r':
-      reset_piece_pos(board, tetron);
+      reset_piece(board, tetron);
+      break;
+    case 'n':
+      add_one_piece(board, tetron);
+      choose_next_piece(board, tetron);
       break;
   }
   
@@ -245,6 +194,7 @@ bool move_piece_y(Board *board, Tetroncios *tetron, char comando)
       break;
     case ' ':
       hard_drop(board, tetron, 0);
+      return true;
       break;
     case 's':
       soft_drop_fixed(tetron);
@@ -335,13 +285,10 @@ void reset_piece_pos(Board *board, Tetroncios *tetron)
   // y at the top
   //
   //tetron->pos = board->pos;
-
   tetron->pos.y = board->pos.y + 1;
-  tetron->extra.dl_lck_dpst_y = tetron->pos.y;
-
-  tetron->pos.x = board->pos.x + (CELLS_WIDTH / 2 - tetron->size / 2) * 2; // board origin + (ideal pos relative to the origin) * 2 to fix the one block = 2 x
-  if (ilegal_move(board, tetron)) clean_board(board);
+  tetron->pos.x = board->pos.x + (CELLS_WIDTH / 2 - tetron->size / 2) * 2; // board origin + (ideal pos relative to the origin) * 2 to fix the one block = 2 x 
 }
+
 void general_move(Tetroncios *tetron, int x_increment, int y_increment)
 {
   x_increment *= 2;
@@ -453,6 +400,38 @@ void draw_one_piece(Tetroncios *tetron)
   flush();
 }
 
+void draw_shadow(Board *board, Tetroncios *tetron)
+{
+  Point og_pos = tetron->pos;
+
+  hard_drop(board, tetron, 0);
+
+  int pos_y, pos_x;
+  for (int i = 0; i < tetron->size; i++)
+  {
+    pos_y = tetron->pos.y + i;
+    for (int j = 0; j < tetron->size; j++)
+    {
+      pos_x = tetron->pos.x + j * 2;
+      switch (tetron->size)
+      {
+        case 2:
+          draw_one_block_b(tetron->set.r2[i][j], pos_x, pos_y);
+          break;
+        case 3:
+          draw_one_block_b(tetron->set.r3[i][j], pos_x, pos_y);
+          break;
+        case 4:
+          draw_one_block_b(tetron->set.r4[i][j], pos_x, pos_y);
+          break;
+      }
+    }
+  }
+  flush();
+
+  tetron->pos = og_pos;
+}
+
 Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
 {
   Point pos;
@@ -479,10 +458,17 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
       .extra = mk_miscellanous(pos.y)
     };
 
+  cpy_to_set_piece(&piece, te_type);
+
+  return piece;
+}
+
+void cpy_to_set_piece(Tetroncios *tetron, BlockTypes te_type)
+{
   switch (te_type)
   {
       case I:
-          memcpy(piece.set.r4, (BlockTypes[4][4]){
+          memcpy(tetron->set.r4, (BlockTypes[4][4]){
               {N, N, N, N},
               {I, I, I, I},
               {N, N, N, N},
@@ -491,7 +477,7 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
           break;
         
       case J:
-          memcpy(piece.set.r3, (BlockTypes[3][3]){
+          memcpy(tetron->set.r3, (BlockTypes[3][3]){
               {J, N, N},
               {J, J, J},
               {N, N, N}
@@ -499,7 +485,7 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
           break;
         
       case L:
-          memcpy(piece.set.r3, (BlockTypes[3][3]){
+          memcpy(tetron->set.r3, (BlockTypes[3][3]){
               {N, N, L},
               {L, L, L},
               {N, N, N}
@@ -508,14 +494,14 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
         
       case O:
           // La pieza O es un bloque estático de 2x2
-          memcpy(piece.set.r2, (BlockTypes[2][2]){
+          memcpy(tetron->set.r2, (BlockTypes[2][2]){
               {O, O},
               {O, O}
           }, sizeof(BlockTypes[2][2]));
           break;
         
       case S:
-          memcpy(piece.set.r3, (BlockTypes[3][3]){
+          memcpy(tetron->set.r3, (BlockTypes[3][3]){
               {N, S, S},
               {S, S, N},
               {N, N, N}
@@ -523,7 +509,7 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
           break;
         
       case T:
-          memcpy(piece.set.r3, (BlockTypes[3][3]){
+          memcpy(tetron->set.r3, (BlockTypes[3][3]){
               {N, T, N},
               {T, T, T},
               {N, N, N}
@@ -531,15 +517,13 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
           break;
         
       case Z:
-          memcpy(piece.set.r3, (BlockTypes[3][3]){
+          memcpy(tetron->set.r3, (BlockTypes[3][3]){
               {Z, Z, N},
               {N, Z, Z},
               {N, N, N}
           }, sizeof(BlockTypes[3][3]));
           break;
   }
-
-  return piece;
 }
 
 Miscellanous mk_miscellanous(int deepest_y)
@@ -559,6 +543,7 @@ Miscellanous mk_miscellanous(int deepest_y)
 
 void draw_one_block(BlockTypes te_type, int x, int y)
 {
+  
   switch (te_type)
   {
     case N:
@@ -569,29 +554,68 @@ void draw_one_block(BlockTypes te_type, int x, int y)
       break;
       //return;
     case I:
-      printf(CIAN);
+      printf(NEGRITA CIAN);
       break;
     case J:
-      printf(AZUL);
+      printf(NEGRITA AZUL);
       break;
     case L:
-      printf(NARANJA);
+      printf(NEGRITA NARANJA);
       break;
     case O:
-      printf(AMARILLO);
+      printf(NEGRITA AMARILLO);
       break;
     case S:
-      printf(VERDE);
+      printf(NEGRITA VERDE);
       break;
     case T:
-      printf(MORADO);
+      printf(NEGRITA MORADO);
       break;
     case Z:
-      printf(ROJO);
+      printf(NEGRITA ROJO);
       break;
   }
   move_cursor(x, y);
   printf(BLOCK);
   printf(RESET);
 }
+
+void draw_one_block_b(BlockTypes te_type, int x, int y)
+{
+  switch (te_type)
+  {
+    case N:
+      return;
+    case BG_W:
+      // move_cursor(x,y); // later on erase 
+      printf(BG_GRIS);
+      break;
+      //return;
+    case I:
+      printf(CIAN_B);
+      break;
+    case J:
+      printf(AZUL_B);
+      break;
+    case L:
+      printf(NARANJA_B);
+      break;
+    case O:
+      printf(AMARILLO_B);
+      break;
+    case S:
+      printf(VERDE_B);
+      break;
+    case T:
+      printf(MORADO_B);
+      break;
+    case Z:
+      printf(ROJO_B);
+      break;
+  }
+  move_cursor(x, y);
+  printf(BLOCK);
+  printf(RESET);
+}
+
 
