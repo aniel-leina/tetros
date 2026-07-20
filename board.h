@@ -19,6 +19,7 @@ typedef struct bag {
 
 typedef struct board {
   BlockTypes cells[CELLS_HIGH][CELLS_WIDTH];
+  BlockTypes pr_cells[CELLS_HIGH][CELLS_WIDTH];
   Point pos;
   Bag bag;
 } Board;

@@ -89,11 +89,13 @@ int main(void)
     if (!gameMaster.paused) 
     {
       update(&board, &tetron, c);
-      clear_screen();
+      //clear_screen();
     }
 
     draw(&board, &tetron);
 
     usleep(1000000/gameMaster.fps);
   }
+
+  exit(0);
 }

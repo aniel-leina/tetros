@@ -218,7 +218,13 @@ void draw_board(Board *board)
     for (int j = 0; j < CELLS_WIDTH; j++)
     {
       pos_x = board->pos.x + j * 2;
-      draw_one_block(board->cells[i][j], pos_x, pos_y);
+
+      if (board->pr_cells[i][j] != board->cells[i][j]) 
+      {
+        draw_one_block(board->cells[i][j], pos_x, pos_y);
+      }
+
+      board->pr_cells[i][j] = board->cells[i][j];
       //if (zig_zag) 
       //{
       //  draw_one_block(Z, pos_x, pos_y);
@@ -256,6 +262,7 @@ Board mk_board(int high, int width, int x, int y)
     for (int j = 0; j < width; j++)
     {
       board.cells[i][j] = (BlockTypes) BOARD_WS;
+      board.pr_cells[i][j] = (BlockTypes) N;
     }
   }
 

@@ -90,6 +90,15 @@ void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
 
 void draw_tetron(Board *board, Tetroncios *tetron)
 {
+  bool draw = (tetron->pos.x != tetron->pr_pos.x);
+  draw = draw || (tetron->pos.y != tetron->pr_pos.y);
+  draw = draw || (tetron->orientation != tetron->pr_orientation);
+
+  tetron->pr_pos = tetron->pos;
+  tetron->pr_orientation = tetron->orientation;
+
+  if (!draw) return;
+
   draw_shadow(board, tetron);
   draw_one_piece(tetron);
   flush();
@@ -565,8 +574,10 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
   Tetroncios piece = 
     {
       .orientation = 0,
+      .pr_orientation = -1,
       .size = size, 
       .pos = pos,
+      .pr_pos = {pos.x - 1, pos.y - 1},
       .extra = mk_miscellanous(pos.y)
     };
 

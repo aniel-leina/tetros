@@ -39,7 +39,9 @@ typedef struct miscellanous {
 typedef struct tetroncios {
   int size;
   int orientation;
+  int pr_orientation;
   Point pos;
+  Point pr_pos;
   Range set;
   Miscellanous extra;
 } Tetroncios;
