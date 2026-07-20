@@ -58,6 +58,7 @@ void choose_next_piece(Board *board, Tetroncios *tetron);
 // END UPDATE
 // DRAW TETRON 
 void draw_tetron(Board *board, Tetroncios *tetron);
+void fill_blank(Board *board, Tetroncios *tetroncios);
 void draw_one_block(BlockTypes te_type, int x, int y);
 void draw_one_block_b(BlockTypes te_type, int x, int y);
 void draw_one_piece(Tetroncios *tetron);
@@ -83,7 +84,7 @@ bool move_piece_rest(Board *board, Tetroncios *tetron, char comando);
 void move_piece_resets(Board *board, Tetroncios *tetron, char comando);
 void hard_drop(Board *board, Tetroncios *tetron, int iteration); // iteration es para evitar que si al resetear bloqueo ahi osea piezas campeando en spawn el menos menos pueda hacer que se mueva hacia arriba
 void soft_drop_fixed(Tetroncios *tetron);
-void gravity(Tetroncios *tetron, int level);
+void gravity(Board *board, Tetroncios *tetron, int level);
 void reset_piece_pos(Board *board, Tetroncios *tetron);
 void general_move(Tetroncios *tetron, int x_increment, int y_increment); // y 20 x 40 los limites
 // END MOVE 

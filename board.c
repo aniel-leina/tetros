@@ -242,11 +242,15 @@ void draw_board(Board *board)
 
 void clean_board(Board *board)
 {
+  int pos_x, pos_y;
   for (int i = 0; i < CELLS_HIGH; i++)
   {
+    pos_y = board->pos.y + i;
     for (int j = 0; j < CELLS_WIDTH; j++)
     {
+      pos_x = board->pos.x + j * 2;
       board->cells[i][j] = (BlockTypes) BOARD_WS;
+      draw_one_block(board->cells[i][j], pos_x, pos_y);
     }
   }
 }

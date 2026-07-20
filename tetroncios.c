@@ -90,17 +90,18 @@ void delay_lock(Board *board, Tetroncios *tetron, bool just_moved)
 
 void draw_tetron(Board *board, Tetroncios *tetron)
 {
-  bool draw = (tetron->pos.x != tetron->pr_pos.x);
-  draw = draw || (tetron->pos.y != tetron->pr_pos.y);
-  draw = draw || (tetron->orientation != tetron->pr_orientation);
+  bool changed = (tetron->pos.x != tetron->pr_pos.x);
+  changed = changed || (tetron->pos.y != tetron->pr_pos.y);
+  changed = changed || (tetron->orientation != tetron->pr_orientation);
+
+  if (changed) {
+    draw_shadow(board, tetron);
+    draw_one_piece(tetron);
+  }
 
   tetron->pr_pos = tetron->pos;
   tetron->pr_orientation = tetron->orientation;
 
-  if (!draw) return;
-
-  draw_shadow(board, tetron);
-  draw_one_piece(tetron);
   flush();
 }
 
@@ -139,6 +140,8 @@ void update_tetron(Board *board, Tetroncios *tetron, char comando)
   bool just_moved = false;
   bool first_check = false; // this checks are for determinig if the player inputed smth to move and succeded
   bool second_check = false;
+  //bool passed = false;
+
 
   // moved with intention
   bool input_moved = move_piece_rest(board, tetron, comando) || move_piece_x(board, tetron, comando);  
@@ -147,10 +150,18 @@ void update_tetron(Board *board, Tetroncios *tetron, char comando)
   if (ilegal_move(board, tetron)) {
     *tetron = backup_tetron;
   } else {
+    //if (input_moved) fill_blank(board, &backup_tetron);
+    if (tetron->pos.x != tetron->pr_pos.x || tetron->pos.y != tetron->pr_pos.y || tetron->orientation != tetron->pr_orientation)
+    {
+      fill_blank(board, &backup_tetron);
+      hard_drop(board, &backup_tetron, 0);
+      fill_blank(board, &backup_tetron);
+    }
     backup_tetron = *tetron;
     first_check = input_moved; // only here since if x moved and y no the counter will substract
     // if x moved and y also grounded false will reset anyways so i can maybe add it 
     // there just for clarity but is not neccesary
+    //passed = true;
   }
   // end first check
 
@@ -162,8 +173,16 @@ void update_tetron(Board *board, Tetroncios *tetron, char comando)
     *tetron = backup_tetron;
     tetron->extra.dl_lck_grnd = true;
   } else {
+    //if (input_moved) fill_blank(board, &backup_tetron);
+    if (tetron->pos.x != tetron->pr_pos.x || tetron->pos.y != tetron->pr_pos.y || tetron->orientation != tetron->pr_orientation)
+    {
+      fill_blank(board, &backup_tetron);
+      hard_drop(board, &backup_tetron, 0);
+      fill_blank(board, &backup_tetron);
+    }
     //tetron->grounded = false;
     second_check = input_moved;
+    //passed = true;
   }
   // end second check
 
@@ -210,7 +229,7 @@ bool move_piece_y(Board *board, Tetroncios *tetron, char comando)
       return true;
       break;
     default:
-      gravity(tetron, 0);
+      gravity(board, tetron, 0);
       return false;
       break;
     }
@@ -276,13 +295,14 @@ void soft_drop_fixed(Tetroncios *tetron)
   }
 }
 
-void gravity(Tetroncios *tetron, int level)
+void gravity(Board *board, Tetroncios *tetron, int level)
 {
   // algo para diferentes levels meteria aqui mas tarde
 
   // static int tetros->extra.grvt_frm_cont = 20 - 1;
 
   if (tetron->extra.grvt_frm_cnt == 0) {
+    //fill_blank(board, tetron);
     general_move(tetron, 0, 1);
     tetron->extra.grvt_frm_cnt = 20 - 1; // this would change depending on the level later on
   } else {
@@ -495,14 +515,47 @@ void swap(BlockTypes *a, BlockTypes *b)
   *b = temp;
 }
 
-void draw_one_piece(Tetroncios *tetron)
+void fill_blank(Board *board, Tetroncios *tetron)
 {
+  int pos_y, pos_x;
+  int board_x, board_y;
   for (int i = 0; i < tetron->size; i++)
   {
-    int pos_y = tetron->pos.y + i;
+    pos_y = tetron->pos.y + i;
+    board_y = (tetron->pos.y - board->pos.y) + i;
     for (int j = 0; j < tetron->size; j++)
     {
-      int pos_x = tetron->pos.x + j * 2;
+      pos_x = tetron->pos.x + j * 2;
+      board_x = (tetron->pos.x - board->pos.x) / 2 + j;
+      if (board_x < 0 || board_y < 0) continue;
+      switch (tetron->size)
+      {
+        case 2:
+          if (tetron->set.r2[i][j] == (BlockTypes) N) continue;
+          break;
+        case 3:
+          if (tetron->set.r3[i][j] == (BlockTypes) N) continue;
+          break;
+        case 4:
+          if (tetron->set.r4[i][j] == (BlockTypes) N) continue;
+          break;
+      }
+      draw_one_block(board->cells[board_y][board_x], pos_x, pos_y);
+    }
+  }
+  flush();
+}
+
+void draw_one_piece(Tetroncios *tetron)
+{
+  int pos_y, pos_x;
+  for (int i = 0; i < tetron->size; i++)
+  {
+    pos_y = tetron->pos.y + i;
+
+    for (int j = 0; j < tetron->size; j++)
+    {
+      pos_x = tetron->pos.x + j * 2;
       switch (tetron->size)
       {
         case 2:
