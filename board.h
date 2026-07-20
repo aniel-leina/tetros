@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #define CELLS_HIGH 20
-#define CELLS_WIDTH 10
+#define CELLS_WIDTH 20
 #define NUMBER_OF_PIECES 7
 #define BOARD_WS BG_W
 #define FRAME_COUNT 25

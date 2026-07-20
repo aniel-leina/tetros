@@ -38,6 +38,7 @@ typedef struct miscellanous {
 
 typedef struct tetroncios {
   int size;
+  int orientation;
   Point pos;
   Range set;
   Miscellanous extra;
@@ -67,6 +68,7 @@ void delay_lock(Board *board, Tetroncios *tetron, bool just_moved);
 //
 // ROTATE 
 void rotate(Tetroncios *tetron, bool clockwise);
+void wall_kick(Board *board, Tetroncios *tetron, bool clockwise);
 void swap(BlockTypes *a, BlockTypes *b);
 void transpose(int size, BlockTypes matrix[size][size]);
 void flip_row(int size, BlockTypes array[size]);

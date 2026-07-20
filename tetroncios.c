@@ -229,10 +229,12 @@ bool move_piece_rest(Board *board, Tetroncios *tetron, char comando)
   {
     case 'j': case 'J':
       rotate(tetron, false);
+      wall_kick(board, tetron, false);
       return true;
       break;
     case 'k': case 'K':
       rotate(tetron, true);
+      wall_kick(board, tetron, true);
       return true;
       break;
   }
@@ -318,6 +320,8 @@ void rotate(Tetroncios *tetron, bool clockwise)
         flip_rows_matrix(size, tetron->set.r4);
         break;
     }
+    tetron->orientation++;
+    if (tetron->orientation >= 4) tetron->orientation = 0; 
   } 
   else 
   {
@@ -336,7 +340,114 @@ void rotate(Tetroncios *tetron, bool clockwise)
         transpose(size, tetron->set.r4);
         break;
     }
+    tetron->orientation--;
+    if (tetron->orientation <= -1) tetron->orientation = 3;
   }
+}
+
+void wall_kick(Board *board, Tetroncios *tetron, bool clockwise)
+// update recupera si todo falla 
+{
+  if (tetron->size == 2) return;
+
+  if (!ilegal_move(board, tetron)) return; // test 1
+
+  int x_inc, y_inc, label; // label es para no escribir otro bloque
+  // de switch gigante solo usar uno reciclando estos cases q son 
+  // para clockwise originalmente 
+
+  if (tetron->size == 3) { // -----------------------------------------------
+    
+    if (clockwise || (tetron->orientation % 2 == 1)) { // uso cortocircuito quiero que si es clock no pase nada 
+      // si no es clock y es 1 o 3 tambien mantenemos label
+      // si es conter y par queiro swapearlos
+      label = tetron->orientation;
+    } else {
+      label = (tetron->orientation == 0)? 2: 0;
+    }
+
+    switch (label) {
+        case 0: case 1:
+          x_inc = -1; y_inc = 0; break;
+        case 2: case 3: 
+          x_inc = 1; y_inc = 0; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 2
+
+    switch (label) {
+        case 0: x_inc = 0; y_inc = 1; break;
+        case 1: x_inc = 0; y_inc = -1; break;
+        case 2: x_inc = 0; y_inc = 1; break;
+        case 3: x_inc = 0; y_inc = -1; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 3
+    
+    switch (label) {
+        case 0: x_inc = 1; y_inc = -3; break;
+        case 1: x_inc = 1; y_inc = 3; break;
+        case 2: x_inc = -1; y_inc = -3; break;
+        case 3: x_inc = -1; y_inc = 3; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 4
+
+    switch (label) {
+        case 0: x_inc = -1; y_inc = 0; break;
+        case 1: x_inc = -1; y_inc = 0; break;
+        case 2: x_inc = 1; y_inc = 0; break;
+        case 3: x_inc = 1; y_inc = 0; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 5
+
+  } else if (tetron->size == 4) { // --------------------------------------------------
+    
+    if (clockwise) {
+      label = tetron->orientation;
+    } else {
+      label = (tetron->orientation - 1 + 4) % 4;
+    }
+
+    switch (label) {
+        case 0: x_inc = 1; y_inc = 0; break;
+        case 1: x_inc = -2; y_inc = 0; break;
+        case 2: x_inc = -1; y_inc = 0; break;
+        case 3: x_inc = 2; y_inc = 0; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 2
+
+    switch (label) {
+        case 0: x_inc = -3; y_inc = 0; break;
+        case 1: x_inc = 3; y_inc = 0; break;
+        case 2: x_inc = 3; y_inc = 0; break;
+        case 3: x_inc = -3; y_inc = 0; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 3
+    
+    switch (label) {
+        case 0: x_inc = 3; y_inc = 2; break;
+        case 1: x_inc = -3; y_inc = 1; break;
+        case 2: x_inc = -3; y_inc = -2; break;
+        case 3: x_inc = 3; y_inc = -1; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 4
+
+    switch (label) {
+        case 0: x_inc = -3; y_inc = -3; break;
+        case 1: x_inc = 3; y_inc = -3; break;
+        case 2: x_inc = 3; y_inc = 3; break;
+        case 3: x_inc = -3; y_inc = 3; break;
+    }
+    general_move(tetron, x_inc, y_inc);
+    if (!ilegal_move(board, tetron)) return; // test 5
+  }
+
+  return;
 }
 
 void flip_rows_matrix(int size, BlockTypes matrix[size][size])
@@ -453,6 +564,7 @@ Tetroncios mk_tetroncios(Board *board, BlockTypes te_type)
 
   Tetroncios piece = 
     {
+      .orientation = 0,
       .size = size, 
       .pos = pos,
       .extra = mk_miscellanous(pos.y)
