@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #define CELLS_HIGH 20
-#define CELLS_WIDTH 20
+#define CELLS_WIDTH 12
 #define NUMBER_OF_PIECES 7
 #define BOARD_WS BG_W
 #define FRAME_COUNT 25
@@ -22,6 +22,8 @@ typedef struct board {
   Point pos;
   Bag bag;
 } Board;
+
+void update_board(Board *board, char comando);
 
 // MAKE BOARD 
 Board mk_board(int high, int width, int x, int y);

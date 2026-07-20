@@ -10,7 +10,7 @@
 #include "myInput.h"
 #include "board.h"
 
-int main (void)
+/*int main (void)
 {
   init_terminal();
   srand(time(NULL));
@@ -26,16 +26,23 @@ int main (void)
 
     if (c == 'q') break;
     update_tetron(&board, &piece, c);
-    clean_filled_lines(&board);
+    update_board(&board, c);
     clear_screen();
 
     draw_board(&board);
     draw_tetron(&board, &piece);
 
-    usleep(1000000/25);
+    usleep(1000000/FRAME_COUNT);
   }
 
   exit(0);
+}*/
+
+void update_board(Board *board, char comando)
+{
+  clean_filled_lines(board);
+
+  if (comando == 'e') clean_board(board);
 }
 
 bool one_line_filled(BlockTypes line[], int size)
